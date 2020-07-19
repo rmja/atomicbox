@@ -1,5 +1,6 @@
 use alloc::boxed::Box;
 use core::fmt::{self, Debug, Formatter};
+use core::marker::PhantomData;
 use core::mem::forget;
 use core::ptr::{self, null_mut};
 use core::sync::atomic::{AtomicPtr, Ordering};
@@ -10,6 +11,9 @@ pub struct AtomicOptionBox<T> {
     /// Pointer to a `T` value in the heap, representing `Some(t)`;
     /// or a null pointer for `None`.
     ptr: AtomicPtr<T>,
+
+    /// Marker to prevent the `Send` and `Sync` traits from being implemented.
+    no_send_sync: PhantomData<*mut T>,
 }
 
 fn into_ptr<T>(value: Option<Box<T>>) -> *mut T {
@@ -39,6 +43,7 @@ impl<T> AtomicOptionBox<T> {
     pub fn new(value: Option<Box<T>>) -> AtomicOptionBox<T> {
         let abox = AtomicOptionBox {
             ptr: AtomicPtr::new(null_mut()),
+            no_send_sync: PhantomData,
         };
         if let Some(box_value) = value {
             abox.ptr.store(Box::into_raw(box_value), Ordering::Release);
@@ -170,6 +175,9 @@ impl<T> AtomicOptionBox<T> {
         }
     }
 }
+
+unsafe impl<T: Send> Send for AtomicOptionBox<T> {}
+unsafe impl<T: Sync> Sync for AtomicOptionBox<T> {}
 
 impl<T> Drop for AtomicOptionBox<T> {
     /// Dropping an `AtomicOptionBox<T>` drops the final `Box<T>` value (if

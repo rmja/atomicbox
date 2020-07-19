@@ -1,5 +1,6 @@
 use alloc::boxed::Box;
 use core::fmt::{self, Debug, Formatter};
+use core::marker::PhantomData;
 use core::mem::forget;
 use core::ptr::{self, null_mut};
 use core::sync::atomic::{AtomicPtr, Ordering};
@@ -8,6 +9,9 @@ use core::sync::atomic::{AtomicPtr, Ordering};
 /// threads.
 pub struct AtomicBox<T> {
     ptr: AtomicPtr<T>,
+
+    /// Marker to prevent the `Send` and `Sync` traits from being implemented.
+    no_send_sync: PhantomData<*mut T>,
 }
 
 impl<T> AtomicBox<T> {
@@ -22,6 +26,7 @@ impl<T> AtomicBox<T> {
     pub fn new(value: Box<T>) -> AtomicBox<T> {
         let abox = AtomicBox {
             ptr: AtomicPtr::new(null_mut()),
+            no_send_sync: PhantomData,
         };
         abox.ptr.store(Box::into_raw(value), Ordering::Release);
         abox
@@ -122,6 +127,9 @@ impl<T> AtomicBox<T> {
         unsafe { &mut *ptr }
     }
 }
+
+unsafe impl<T: Send> Send for AtomicBox<T> {}
+unsafe impl<T: Sync> Sync for AtomicBox<T> {}
 
 impl<T> Drop for AtomicBox<T> {
     /// Dropping an `AtomicBox<T>` drops the final `Box<T>` value stored in it.
