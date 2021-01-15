@@ -1,7 +1,8 @@
-use std::fmt::{self, Debug, Formatter};
-use std::mem::forget;
-use std::ptr::{self, null_mut};
-use std::sync::atomic::{AtomicPtr, Ordering};
+use core::fmt::{self, Debug, Formatter};
+use core::mem::forget;
+use core::ptr::{self, null_mut};
+use core::sync::atomic::{AtomicPtr, Ordering};
+use alloc::boxed::Box;
 
 /// A type that holds a single `Box<T>` value and can be safely shared between
 /// threads.
@@ -41,7 +42,7 @@ impl<T> AtomicBox<T> {
     ///
     /// # Examples
     ///
-    ///     use std::sync::atomic::Ordering;
+    ///     use core::sync::atomic::Ordering;
     ///     use atomicbox::AtomicBox;
     ///
     ///     let atom = AtomicBox::new(Box::new("one"));
@@ -67,7 +68,7 @@ impl<T> AtomicBox<T> {
     ///
     /// # Examples
     ///
-    ///     use std::sync::atomic::Ordering;
+    ///     use core::sync::atomic::Ordering;
     ///     use atomicbox::AtomicBox;
     ///
     ///     let atom = AtomicBox::new(Box::new("one"));
@@ -94,7 +95,7 @@ impl<T> AtomicBox<T> {
     ///
     /// # Examples
     ///
-    ///     use std::sync::atomic::Ordering;
+    ///     use core::sync::atomic::Ordering;
     ///     use atomicbox::AtomicBox;
     ///
     ///     let atom = AtomicBox::new(Box::new("one"));
@@ -185,6 +186,7 @@ mod tests {
     use std::sync::atomic::Ordering;
     use std::sync::{Arc, Barrier};
     use std::thread::spawn;
+    use std::vec::Vec;
 
     #[test]
     fn atomic_box_swap_works() {

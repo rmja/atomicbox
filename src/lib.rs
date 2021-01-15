@@ -33,6 +33,13 @@
 //! other atomic type. The only difference here is that those contents happen to
 //! be on the heap.
 
+#![cfg_attr(not(feature = "std"), no_std)]
+extern crate alloc;
+
+#[cfg(test)]
+#[macro_use]
+extern crate std;
+
 mod atomic_box;
 mod atomic_option_box;
 
