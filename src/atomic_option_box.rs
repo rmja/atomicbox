@@ -1,8 +1,8 @@
+use alloc::boxed::Box;
 use core::fmt::{self, Debug, Formatter};
 use core::mem::forget;
 use core::ptr::{self, null_mut};
 use core::sync::atomic::{AtomicPtr, Ordering};
-use alloc::boxed::Box;
 
 /// A type that holds a single `Option<Box<T>>` value and can be safely shared
 /// between threads.
@@ -235,8 +235,8 @@ impl<T> Debug for AtomicOptionBox<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::atomic::Ordering;
     use std::string::String;
+    use std::sync::atomic::Ordering;
 
     #[test]
     fn atomic_option_box_swap_works() {

@@ -1,8 +1,8 @@
+use alloc::boxed::Box;
 use core::fmt::{self, Debug, Formatter};
 use core::mem::forget;
 use core::ptr::{self, null_mut};
 use core::sync::atomic::{AtomicPtr, Ordering};
-use alloc::boxed::Box;
 
 /// A type that holds a single `Box<T>` value and can be safely shared between
 /// threads.
