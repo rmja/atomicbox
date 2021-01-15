@@ -102,6 +102,26 @@ impl<T> AtomicOptionBox<T> {
         drop(result)
     }
 
+    /// Atomically set this `AtomicOptionBox` to `other` iff the current value is `None`.
+    ///
+    /// The `AtomicOptionBox` takes ownership of `other`.
+    ///
+    /// # Examples
+    ///
+    ///     use core::sync::atomic::Ordering;
+    ///     use atomicbox::AtomicOptionBox;
+    ///
+    ///     let atom = AtomicOptionBox::new(None);
+    ///     assert!(atom.try_store(Box::new("ok"), Ordering::AcqRel));
+    ///     assert!(!atom.try_store(Box::new("not-ok"), Ordering::AcqRel));
+    ///     assert_eq!(atom.into_inner(), Some(Box::new("ok")));
+    ///
+    pub fn try_store(&self, other: Box<T>, order: Ordering) -> bool {
+        let new_ptr = Box::into_raw(other);
+        let old_ptr = self.ptr.compare_and_swap(null_mut(), new_ptr, order);
+        old_ptr.is_null()
+    }
+
     /// Atomically set this `AtomicOptionBox` to `None` and return the
     /// previous value.
     ///
